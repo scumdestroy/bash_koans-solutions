@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+if [ -z "$1" ]; then
+  echo "usage: test [koan name]"
+  exit
+fi
+
+# Setup
+cd "$(dirname "$0")"
+mkdir -p tmp
+
+# Load all files in support
+for file in support/*.sh ; do
+  source "$file"
+done
+
+green() {
+  return
+}
+lesson_title() {
+  return
+}
+
+# Load all files in src
+for file in src/*.sh ; do
+  source "$file"
+done
+
+$1
+

@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+
+# Setup
+cd "$(dirname "$0")"
+mkdir -p tmp
+
+# Load all files in support
+for file in support/*.sh ; do
+  source "$file"
+done
+
+LESSONS_TOTAL=$(find src -maxdepth 1 -name '*.sh' | wc -l)
+LESSONS_LEFT=${LESSONS_TOTAL}
+KOANS_TOTAL=$(grep --no-filename --count "test_[a-zA-Z_]* *() *{" src/*.sh | awk '{x+=$1} END {print x}')
+KOANS_LEFT=${KOANS_TOTAL}
+
+TEST_ALL="NO" # Normal behavior
+# ~ TEST_ALL="YES" # Don't stop on assert failed. (Useful in development)
+export TEST_ALL
+
+# Load all files in src
+for file in src/*.sh ; do
+  # echo "Thinking $(basename $file .sh)"
+  source "$file"
+
+  # OMG this is a bash test runner!! <3 <3 <3
+  # functions=$(declare -F | cut -d ' ' -f 3 | grep ^test_)
+  # This style allows us to run tests in order
+  functions=$(grep -h test_ "$file" | cut -d '(' -f 1)
+  for i in $functions ; do
+    rm -rf tmp/*
+    $i
+    ((KOANS_LEFT -= 1))
+  done
+  ((LESSONS_LEFT -= 1))
+done
+
